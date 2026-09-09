@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/stats",
+      "destination": "/api/stats.json"
+    },
+    {
+      "source": "/api/team",
+      "destination": "/api/team.json"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}

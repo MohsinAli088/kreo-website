@@ -1,0 +1,13 @@
+{
+  "users": 10830,
+  "servers": 26,
+  "commands": 54,
+  "ping": 18,
+  "uptime": 172800000,
+  "shards": 1,
+  "clusters": 3,
+  "voice": 0,
+  "status": "operational",
+  "botName": "Kreo",
+  "timestamp": 1788983895254
+}
