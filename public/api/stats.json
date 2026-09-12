@@ -1,5 +1,5 @@
 {
-  "users": 10830,
+  "users": 10827,
   "servers": 26,
   "commands": 54,
   "ping": 18,
@@ -9,5 +9,5 @@
   "voice": 0,
   "status": "operational",
   "botName": "Kreo",
-  "timestamp": 1788983895254
+  "timestamp": 1788985535631
 }

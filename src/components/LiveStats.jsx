@@ -53,20 +53,20 @@ function AnimatedNumber({ value, duration }) {
 
 export default function LiveStats() {
   const [stats, setStats] = useState({
-    users: 14659,
-    servers: 27,
+    users: 0,
+    servers: 0,
     commands: 54,
-    ping: 18,
-    uptime: 172800000,
+    ping: 0,
+    uptime: 0,
     shards: 1,
-    clusters: 3,
+    clusters: 1,
     voice: 0
   });
-  const [isLive, setIsLive] = useState(true);
+  const [isLive, setIsLive] = useState(false);
 
   // Format milliseconds into readable duration like 2d 4h or 5h 22m
   const formatUptime = (ms) => {
-    if (!ms) return '0h 0m';
+    if (!ms || ms <= 0) return '0h 0m';
     const totalMinutes = Math.floor(ms / 60000);
     const days = Math.floor(totalMinutes / (60 * 24));
     const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
@@ -79,11 +79,18 @@ export default function LiveStats() {
     let eventSource = null;
     let pollInterval = null;
 
+    const apiBase = (import.meta.env.VITE_BOT_API_URL || '').replace(/\/$/, '');
+    const statsUrl = apiBase ? `${apiBase}/api/stats` : '/api/stats';
+    const streamUrl = apiBase ? `${apiBase}/api/stats/stream` : '/api/stats/stream';
+
     const fetchLiveStats = async () => {
       try {
-        let res = await fetch('/api/stats').catch(() => null);
+        let res = await fetch(statsUrl).catch(() => null);
         if (!res || !res.ok || res.headers.get('content-type')?.includes('text/html')) {
-          res = await fetch('/api/stats.json').catch(() => null);
+          // If relative fetch fails and running on localhost, attempt direct connection to bot API
+          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            res = await fetch('http://127.0.0.1:4000/api/stats').catch(() => null);
+          }
         }
         if (res && res.ok) {
           const data = await res.json();
@@ -91,23 +98,16 @@ export default function LiveStats() {
             setStats((prev) => ({
               ...prev,
               ...data,
-              ping: Math.max(14, (data.ping || 18) + (Math.floor(Math.random() * 5) - 2)),
-              uptime: (data.uptime || prev.uptime) + 5000
+              ping: data.ping || prev.ping || 18,
+              uptime: data.uptime || prev.uptime
             }));
             setIsLive(true);
             return;
           }
         }
       } catch (err) {
-        console.warn('[LiveStats] Fetch fallback triggered:', err);
+        console.warn('[LiveStats] Telemetry fetch warning:', err);
       }
-
-      // Telemetry heartbeat fallback
-      setStats((prev) => ({
-        ...prev,
-        ping: Math.max(14, 18 + (Math.floor(Math.random() * 5) - 2)),
-        uptime: prev.uptime + 5000
-      }));
     };
 
     // 1. Initial immediate fetch
@@ -115,12 +115,12 @@ export default function LiveStats() {
 
     // 2. Connect to Server-Sent Events (SSE) stream for real-time live telemetry
     try {
-      eventSource = new EventSource('/api/stats/stream');
+      eventSource = new EventSource(streamUrl);
       eventSource.onopen = () => setIsLive(true);
       eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (data) {
+          if (data && typeof data.servers !== 'undefined') {
             setStats((prev) => ({ ...prev, ...data }));
             setIsLive(true);
           }

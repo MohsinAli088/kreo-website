@@ -11,16 +11,20 @@ export default function Footer() {
   const supportUrl = 'https://discord.gg/9wRBcsfK9Z';
 
   const [stats, setStats] = useState({
-    servers: 27,
-    users: 14659
+    servers: 0,
+    users: 0
   });
 
   useEffect(() => {
     const loadStats = async () => {
       try {
-        let res = await fetch('/api/stats').catch(() => null);
+        const apiBase = (import.meta.env.VITE_BOT_API_URL || '').replace(/\/$/, '');
+        const statsUrl = apiBase ? `${apiBase}/api/stats` : '/api/stats';
+        let res = await fetch(statsUrl).catch(() => null);
         if (!res || !res.ok || res.headers.get('content-type')?.includes('text/html')) {
-          res = await fetch('/api/stats.json').catch(() => null);
+          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            res = await fetch('http://127.0.0.1:4000/api/stats').catch(() => null);
+          }
         }
         if (res && res.ok) {
           const data = await res.json();
