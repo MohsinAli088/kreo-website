@@ -1,6 +1,6 @@
 {
-  "users": 10827,
-  "servers": 26,
+  "users": 14659,
+  "servers": 27,
   "commands": 54,
   "ping": 18,
   "uptime": 172800000,
@@ -9,5 +9,6 @@
   "voice": 0,
   "status": "operational",
   "botName": "Kreo",
-  "timestamp": 1788985535631
+  "isStatic": true,
+  "timestamp": 1788859400000
 }

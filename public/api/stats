@@ -9,5 +9,6 @@
   "voice": 0,
   "status": "operational",
   "botName": "Kreo",
+  "isStatic": true,
   "timestamp": 1788859400000
 }

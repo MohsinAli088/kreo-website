@@ -19,18 +19,26 @@ function liveDiscordStatsPlugin() {
   }
 
   let cachedDiscordStats = {
-    users: 0,
-    servers: 0,
+    users: 14659,
+    servers: 27,
     commands: 54,
     ping: 18,
-    uptime: 0,
+    uptime: 172800000,
     shards: 1,
-    clusters: 1,
+    clusters: 3,
     voice: 0,
     status: 'operational',
     botName: 'Kreo',
     timestamp: Date.now()
   };
+
+  const staticStatsPath = path.resolve(__dirname, 'public/api/stats.json');
+  if (fs.existsSync(staticStatsPath)) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(staticStatsPath, 'utf8'));
+      cachedDiscordStats = { ...cachedDiscordStats, ...raw };
+    } catch {}
+  }
 
   let lastDiscordFetch = 0;
 

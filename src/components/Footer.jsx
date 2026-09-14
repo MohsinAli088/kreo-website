@@ -11,8 +11,8 @@ export default function Footer() {
   const supportUrl = 'https://discord.gg/9wRBcsfK9Z';
 
   const [stats, setStats] = useState({
-    servers: 0,
-    users: 0
+    servers: 27,
+    users: 14659
   });
 
   useEffect(() => {
@@ -20,20 +20,45 @@ export default function Footer() {
       try {
         const apiBase = (import.meta.env.VITE_BOT_API_URL || '').replace(/\/$/, '');
         const statsUrl = apiBase ? `${apiBase}/api/stats` : '/api/stats';
-        let res = await fetch(statsUrl).catch(() => null);
-        if (!res || !res.ok || res.headers.get('content-type')?.includes('text/html')) {
-          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            res = await fetch('http://127.0.0.1:4000/api/stats').catch(() => null);
+        const staticUrl = '/api/stats.json';
+
+        let data = null;
+        const res = await fetch(statsUrl).catch(() => null);
+        const isHtml = res?.headers?.get('content-type')?.includes('text/html');
+
+        if (res && res.ok && !isHtml) {
+          try {
+            data = await res.json();
+          } catch {}
+        }
+
+        if ((!data || !data.servers || data.servers === 0) &&
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          const localRes = await fetch('http://127.0.0.1:4000/api/stats').catch(() => null);
+          if (localRes && localRes.ok) {
+            try {
+              data = await localRes.json();
+            } catch {}
           }
         }
-        if (res && res.ok) {
-          const data = await res.json();
-          if (data && typeof data.servers === 'number') {
-            setStats({
-              servers: data.servers,
-              users: data.users
-            });
+
+        if (!data || !data.servers || data.servers === 0) {
+          const staticRes = await fetch(staticUrl).catch(() => null);
+          if (staticRes && staticRes.ok) {
+            try {
+              const staticData = await staticRes.json();
+              if (staticData && staticData.servers > 0) {
+                data = staticData;
+              }
+            } catch {}
           }
+        }
+
+        if (data && typeof data.servers === 'number' && data.servers > 0) {
+          setStats({
+            servers: data.servers,
+            users: data.users || 14659
+          });
         }
       } catch {}
     };
